@@ -24,7 +24,7 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
 
   /**
    * Handle clicks on the grid plane to add voxels
-   * Raycasts to find the intersection point and rounds to grid coordinates
+   * Raycasts to find the intersection point and places voxel at grid center
    */
   const handlePlaneClick = (event: any) => {
     event.stopPropagation();
@@ -33,15 +33,17 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
 
     const point = event.point;
 
-    // Round to nearest grid position
+    // Floor to get grid cell, then add 0.5 to center in the cell
+    // This makes voxels align with grid squares instead of intersections
     const gridPos: Position = {
-      x: Math.round(point.x),
-      y: 0, // Start at ground level
-      z: Math.round(point.z),
+      x: Math.floor(point.x) + 0.5,
+      y: 0.5, // Start at 0.5 so voxel sits on grid
+      z: Math.floor(point.z) + 0.5,
     };
 
     // Check bounds
-    if (Math.abs(gridPos.x) <= GRID_SIZE / 2 && Math.abs(gridPos.z) <= GRID_SIZE / 2) {
+    const maxBound = GRID_SIZE / 2;
+    if (Math.abs(gridPos.x) <= maxBound && Math.abs(gridPos.z) <= maxBound) {
       onAddVoxel(gridPos);
     }
   };
@@ -74,7 +76,7 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
         maxDistance={50}
       />
 
-      {/* Grid Helper */}
+      {/* Grid Helper - double-sided so visible from below */}
       <Grid
         args={[GRID_SIZE, GRID_SIZE]}
         cellSize={1}
@@ -85,10 +87,11 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
         sectionColor="#9ca3af"
         fadeDistance={50}
         fadeStrength={1}
-        position={[0, -0.01, 0]}
+        position={[0, 0, 0]}
+        side={THREE.DoubleSide}
       />
 
-      {/* Invisible ground plane for click detection */}
+      {/* Invisible ground plane for click detection - double-sided */}
       <mesh
         ref={gridPlaneRef}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -96,7 +99,7 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
         onClick={handlePlaneClick}
       >
         <planeGeometry args={[GRID_SIZE, GRID_SIZE]} />
-        <meshBasicMaterial visible={false} />
+        <meshBasicMaterial visible={false} side={THREE.DoubleSide} />
       </mesh>
 
       {/* Voxels */}
