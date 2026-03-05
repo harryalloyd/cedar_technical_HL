@@ -21,13 +21,45 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
   const { camera, raycaster } = useThree();
   const [hoverPosition, setHoverPosition] = useState<Position | null>(null);
   const gridPlaneRef = useRef<THREE.Mesh>(null);
+  const isDragging = useRef(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+
+  /**
+   * Track pointer down to detect dragging
+   */
+  const handlePointerDown = (event: any) => {
+    isDragging.current = false;
+    dragStartPos.current = { x: event.clientX, y: event.clientY };
+  };
+
+  /**
+   * Track pointer move to detect if user is dragging
+   */
+  const handlePointerMove = (event: any) => {
+    if (dragStartPos.current) {
+      const dx = event.clientX - dragStartPos.current.x;
+      const dy = event.clientY - dragStartPos.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // If moved more than 5 pixels, consider it a drag
+      if (distance > 5) {
+        isDragging.current = true;
+      }
+    }
+  };
 
   /**
    * Handle clicks on the grid plane to add voxels
-   * Raycasts to find the intersection point and places voxel at grid center
+   * Only adds if user didn't drag (prevents placement after rotate/pan)
    */
   const handlePlaneClick = (event: any) => {
     event.stopPropagation();
+
+    // Don't place voxel if user was dragging to rotate/pan
+    if (isDragging.current) {
+      isDragging.current = false;
+      return;
+    }
 
     if (currentTool === 'remove') return;
 
@@ -61,7 +93,7 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
   };
 
   return (
-    <>
+    <group onPointerDown={handlePointerDown} onPointerMove={handlePointerMove}>
       {/* Lighting */}
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
@@ -112,6 +144,6 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
           <meshBasicMaterial color={selectedColor} opacity={0.5} transparent />
         </mesh>
       )}
-    </>
+    </group>
   );
 }
