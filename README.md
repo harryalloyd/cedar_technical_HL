@@ -129,7 +129,3 @@ This project was built as part of Cedar's internship technical challenge. The fo
 - Performance optimization
 - Good UX/UI design
 - Effective use of AI tools during development
-
----
-
-Built with ❤️ using Claude AI assistance
