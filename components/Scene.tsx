@@ -123,23 +123,36 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
         onRemoveVoxel(voxel.position);
       }
     } else if (currentTool === 'add') {
-      // Get first intersection (nearest voxel hit)
-      const hit = event.intersections?.[0];
-      if (!hit || !hit.face) return;
-
       // Get the clicked voxel's position (grid-aligned, reliable)
       const clickedVoxel = voxels.get(key);
       if (!clickedVoxel) return;
 
+      // Find the intersection for THIS specific voxel (not just first intersection)
+      const voxelHit = event.intersections?.find((hit: any) =>
+        hit.object.userData?.key === key
+      );
+
+      if (!voxelHit || !voxelHit.face) return;
+
       const { x, y, z } = clickedVoxel.position;
-      const normal = hit.face.normal;
+
+      // Transform normal to world space and round to ensure it's exactly (-1, 0, or 1)
+      const normal = voxelHit.face.normal.clone();
+      normal.transformDirection(voxelHit.object.matrixWorld);
+
+      // Round to nearest integer to avoid floating point issues
+      // This ensures normal is exactly (-1, 0, 1) in each axis
+      const roundedNormal = {
+        x: Math.round(normal.x),
+        y: Math.round(normal.y),
+        z: Math.round(normal.z),
+      };
 
       // Calculate adjacent position (clicked voxel + face normal)
-      // Normal is always (-1, 0, or 1) in each axis, so simple addition works
       const adjacentPos: Position = {
-        x: x + normal.x,
-        y: y + normal.y,
-        z: z + normal.z,
+        x: x + roundedNormal.x,
+        y: y + roundedNormal.y,
+        z: z + roundedNormal.z,
       };
 
       // Check bounds
