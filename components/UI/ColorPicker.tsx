@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
+import 'react-colorful/dist/index.css';
 import { COLORS } from '@/utils/constants';
 
 interface ColorPickerProps {

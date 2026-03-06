@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* React Colorful styles */
-@import 'react-colorful/dist/index.css';
-
 * {
   margin: 0;
   padding: 0;
