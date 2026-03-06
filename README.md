@@ -144,7 +144,6 @@ voxel-editor/
 
 - **Desktop-focused:** Optimized for mouse/trackpad (touch controls not implemented)
 - **No persistence:** Scene resets on page refresh (save/load feature not included)
-- **Single undo branch:** Going back and making new edits discards forward history (intentional, matches browser UX)
 
 ## Approach
 
