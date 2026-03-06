@@ -7,10 +7,9 @@ export const COLORS = [
   '#00FF00', // Green
   '#0000FF', // Blue
   '#FFFF00', // Yellow
-  '#FF00FF', // Magenta
-  '#00FFFF', // Cyan
+  '#FF00FF', // Pink/Magenta
+  '#00FFFF', // Light Blue/Cyan
   '#FFFFFF', // White
-  '#808080', // Gray
 ];
 
 export const DEFAULT_COLOR = COLORS[0];
