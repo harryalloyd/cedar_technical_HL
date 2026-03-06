@@ -4,6 +4,8 @@ A browser-based 3D voxel editor built for Cedar's technical challenge.
 
 **Live Demo:** https://cedar-technical-hl.vercel.app
 
+**AI Development Notes:** https://github.com/harryalloyd/cedar_technical_HL/tree/main/ai-notes
+
 ## Tech Stack
 
 - **Framework:** Next.js 14 with App Router
