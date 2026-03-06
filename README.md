@@ -160,10 +160,16 @@ Built by Harrison Lloyd for Cedar's summer internship technical challenge.
 - Deployed on Vercel
 
 **AI Assistance:**
-Developed with extensive use of Claude Code (Anthropic) for:
+
+Workflow:
+1. Used ChatGPT 5.2 Thinking to craft detailed, well-structured prompts
+2. Fed those prompts to Claude Code for implementation
+3. Iterative refinement based on testing and feedback
+
+Claude Code used for:
 - Architecture planning and trade-off analysis
 - Implementation of complex features (undo/redo, raycasting)
 - Debugging and bug fixing
 - Documentation and code review
 
-All AI interactions documented in `ai-notes/` folder (not committed to repo).
+All AI interactions documented in `ai-notes/` folder.
