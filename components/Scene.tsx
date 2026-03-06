@@ -127,23 +127,26 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
       const hit = event.intersections?.[0];
       if (!hit || !hit.face) return;
 
-      // Get face normal to determine which side was clicked
-      const normal = hit.face.normal.clone();
-      const hitPoint = hit.point;
+      // Get the clicked voxel's position (grid-aligned, reliable)
+      const clickedVoxel = voxels.get(key);
+      if (!clickedVoxel) return;
 
-      // Calculate adjacent position (offset by normal)
-      // Use 0.6 offset to ensure we land in the next grid cell
+      const { x, y, z } = clickedVoxel.position;
+      const normal = hit.face.normal;
+
+      // Calculate adjacent position (clicked voxel + face normal)
+      // Normal is always (-1, 0, or 1) in each axis, so simple addition works
       const adjacentPos: Position = {
-        x: Math.floor(hitPoint.x + normal.x * 0.6) + 0.5,
-        y: Math.floor(hitPoint.y + normal.y * 0.6) + 0.5,
-        z: Math.floor(hitPoint.z + normal.z * 0.6) + 0.5,
+        x: x + normal.x,
+        y: y + normal.y,
+        z: z + normal.z,
       };
 
       // Check bounds
       const maxBound = GRID_SIZE / 2;
       if (
-        Math.abs(adjacentPos.x) <= maxBound &&
-        Math.abs(adjacentPos.z) <= maxBound &&
+        Math.abs(adjacentPos.x - 0.5) <= maxBound &&
+        Math.abs(adjacentPos.z - 0.5) <= maxBound &&
         adjacentPos.y >= 0.5 &&
         adjacentPos.y <= MAX_HEIGHT
       ) {
