@@ -29,7 +29,6 @@ Plan the technical architecture, choose the rendering stack, and create a 48-hou
 | Learning curve | Steeper | Steeper | ✅ Declarative (if you know React) |
 | Dev speed (48hr) | Slower | Slower | ✅ Fastest iteration |
 | Instancing support | ✅ Yes | ✅ Yes | ✅ Yes (via Three.js) |
-| Bundle size | ~600KB | ~1.5MB | ✅ ~650KB (acceptable) |
 | AI assistance | Good | Good | ✅ Best (cleaner code structure) |
 | Community/docs | Excellent | Good | ✅ Excellent + R3F ecosystem |
 
@@ -124,7 +123,6 @@ keyToPosition(key: string) => Position
 **Bottleneck 4: Bundle Size (Vercel free tier)**
 - **Mitigation:**
   - Use dynamic imports for heavy components
-  - Expected bundle: ~650KB (acceptable)
   - Three.js tree-shaking via R3F
 
 ### 4. Stretch Features (Ranked by Effort-to-Impact)
@@ -223,7 +221,6 @@ keyToPosition(key: string) => Position
 **Deployment:**
 - GitHub: harryalloyd/cedar_technical_HL
 - Vercel: Auto-deploy on push
-- Bundle size: ~650KB (within predictions)
 
 ## Verification
 
