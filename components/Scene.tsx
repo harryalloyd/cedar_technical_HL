@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { OrbitControls, Grid } from '@react-three/drei';
 import { VoxelGrid } from './VoxelGrid';
 import { VoxelMap, Position, Tool } from '@/types/voxel';
-import { GRID_SIZE } from '@/utils/constants';
+import { GRID_SIZE, MAX_HEIGHT } from '@/utils/constants';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -52,6 +52,7 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
   /**
    * Handle clicks on the grid plane to add voxels
    * Only adds if user didn't drag (prevents placement after rotate/pan)
+   * CRITICAL: Check if voxel was hit first to prevent placing through voxels
    */
   const handlePlaneClick = (event: any) => {
     event.stopPropagation();
@@ -62,8 +63,22 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
       return;
     }
 
-    if (currentTool === 'remove') return;
+    // Only allow in Add mode
+    if (currentTool !== 'add') return;
 
+    // CRITICAL: Check if we hit a voxel first (higher priority than grid)
+    // This prevents "placing through" voxels when clicking them
+    const voxelHit = event.intersections?.find((hit: any) =>
+      hit.object.userData?.isVoxel === true
+    );
+
+    if (voxelHit) {
+      // Don't place on grid if voxel was clicked
+      // The voxel's onClick handler will handle this
+      return;
+    }
+
+    // No voxel hit - place on empty grid
     const point = event.point;
 
     // Floor to get grid cell, then add 0.5 to center in the cell
@@ -89,13 +104,56 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
   };
 
   /**
-   * Handle clicks on existing voxels to remove them
+   * Handle clicks on existing voxels
+   * Remove mode: deletes the voxel
+   * Add mode: places voxel adjacent to clicked face
    */
-  const handleVoxelClick = (key: string) => {
+  const handleVoxelClick = (key: string, event: any) => {
+    event.stopPropagation(); // Already called in Voxel.tsx but defensive
+
+    // Don't act if user was dragging
+    if (isDragging.current) {
+      isDragging.current = false;
+      return;
+    }
+
     if (currentTool === 'remove') {
       const voxel = voxels.get(key);
       if (voxel) {
         onRemoveVoxel(voxel.position);
+      }
+    } else if (currentTool === 'add') {
+      // Get first intersection (nearest voxel hit)
+      const hit = event.intersections?.[0];
+      if (!hit || !hit.face) return;
+
+      // Get face normal to determine which side was clicked
+      const normal = hit.face.normal.clone();
+      const hitPoint = hit.point;
+
+      // Calculate adjacent position (offset by normal)
+      // Use 0.6 offset to ensure we land in the next grid cell
+      const adjacentPos: Position = {
+        x: Math.floor(hitPoint.x + normal.x * 0.6) + 0.5,
+        y: Math.floor(hitPoint.y + normal.y * 0.6) + 0.5,
+        z: Math.floor(hitPoint.z + normal.z * 0.6) + 0.5,
+      };
+
+      // Check bounds
+      const maxBound = GRID_SIZE / 2;
+      if (
+        Math.abs(adjacentPos.x) <= maxBound &&
+        Math.abs(adjacentPos.z) <= maxBound &&
+        adjacentPos.y >= 0.5 &&
+        adjacentPos.y <= MAX_HEIGHT
+      ) {
+        const success = onAddVoxel(adjacentPos);
+
+        // Show occupied feedback if placement failed
+        if (!success) {
+          setOccupiedFeedback(adjacentPos);
+          setTimeout(() => setOccupiedFeedback(null), 300);
+        }
       }
     }
   };
@@ -137,6 +195,7 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, 0, 0]}
         onClick={handlePlaneClick}
+        userData={{ isGridPlane: true }} // Mark for intersection filtering
       >
         <planeGeometry args={[GRID_SIZE, GRID_SIZE]} />
         <meshBasicMaterial visible={false} side={THREE.DoubleSide} />

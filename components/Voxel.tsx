@@ -1,10 +1,11 @@
 import React, { memo } from 'react';
 import { Voxel as VoxelType } from '@/types/voxel';
 import { VOXEL_SIZE } from '@/utils/constants';
+import { positionToKey } from '@/utils/voxelHelpers';
 
 interface VoxelProps {
   voxel: VoxelType;
-  onClick?: () => void;
+  onClick?: (event: any) => void;
 }
 
 /**
@@ -13,11 +14,18 @@ interface VoxelProps {
  */
 export const Voxel = memo<VoxelProps>(({ voxel, onClick }) => {
   const { position, color } = voxel;
+  const key = positionToKey(position);
+
+  const handleClick = (event: any) => {
+    event.stopPropagation(); // CRITICAL: prevent event from bubbling through multiple voxels
+    onClick?.(event);
+  };
 
   return (
     <mesh
       position={[position.x, position.y, position.z]}
-      onClick={onClick}
+      onClick={handleClick}
+      userData={{ isVoxel: true, key }} // Mark for intersection filtering
     >
       <boxGeometry args={[VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE]} />
       <meshStandardMaterial color={color} />

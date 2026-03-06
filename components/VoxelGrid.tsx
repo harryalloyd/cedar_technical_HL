@@ -5,7 +5,7 @@ import { positionToKey } from '@/utils/voxelHelpers';
 
 interface VoxelGridProps {
   voxels: VoxelMap;
-  onVoxelClick?: (key: string) => void;
+  onVoxelClick?: (key: string, event: any) => void;
 }
 
 /**
@@ -19,7 +19,7 @@ export function VoxelGrid({ voxels, onVoxelClick }: VoxelGridProps) {
         <Voxel
           key={key}
           voxel={voxel}
-          onClick={() => onVoxelClick?.(key)}
+          onClick={(event) => onVoxelClick?.(key, event)}
         />
       ))}
     </>
