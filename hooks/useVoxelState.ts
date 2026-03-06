@@ -8,15 +8,25 @@ export function useVoxelState() {
   const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_COLOR);
   const [currentTool, setCurrentTool] = useState<Tool>('add');
 
-  const addVoxel = useCallback((position: Position, color?: string) => {
+  const addVoxel = useCallback((position: Position, color?: string): boolean => {
     const key = positionToKey(position);
     const voxelColor = color || selectedColor;
 
+    let success = false;
     setVoxels(prev => {
+      // Check if cell is already occupied
+      if (prev.has(key)) {
+        success = false;
+        return prev; // Return unchanged state
+      }
+
       const next = new Map(prev);
       next.set(key, { position, color: voxelColor });
+      success = true;
       return next;
     });
+
+    return success;
   }, [selectedColor]);
 
   const removeVoxel = useCallback((position: Position) => {

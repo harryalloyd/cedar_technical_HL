@@ -10,7 +10,7 @@ interface SceneProps {
   voxels: VoxelMap;
   selectedColor: string;
   currentTool: Tool;
-  onAddVoxel: (position: Position) => void;
+  onAddVoxel: (position: Position) => boolean;
   onRemoveVoxel: (position: Position) => void;
 }
 
@@ -20,6 +20,7 @@ interface SceneProps {
 export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemoveVoxel }: SceneProps) {
   const { camera, raycaster } = useThree();
   const [hoverPosition, setHoverPosition] = useState<Position | null>(null);
+  const [occupiedFeedback, setOccupiedFeedback] = useState<Position | null>(null);
   const gridPlaneRef = useRef<THREE.Mesh>(null);
   const isDragging = useRef(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
@@ -76,7 +77,14 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
     // Check bounds
     const maxBound = GRID_SIZE / 2;
     if (Math.abs(gridPos.x) <= maxBound && Math.abs(gridPos.z) <= maxBound) {
-      onAddVoxel(gridPos);
+      const success = onAddVoxel(gridPos);
+
+      // Show occupied feedback if placement failed
+      if (!success) {
+        setOccupiedFeedback(gridPos);
+        // Clear feedback after animation
+        setTimeout(() => setOccupiedFeedback(null), 300);
+      }
     }
   };
 
@@ -142,6 +150,14 @@ export function Scene({ voxels, selectedColor, currentTool, onAddVoxel, onRemove
         <mesh position={[hoverPosition.x, hoverPosition.y, hoverPosition.z]}>
           <boxGeometry args={[1, 1, 1]} />
           <meshBasicMaterial color={selectedColor} opacity={0.5} transparent />
+        </mesh>
+      )}
+
+      {/* Occupied feedback - red flash when trying to place on occupied cell */}
+      {occupiedFeedback && (
+        <mesh position={[occupiedFeedback.x, occupiedFeedback.y, occupiedFeedback.z]}>
+          <boxGeometry args={[1.05, 1.05, 1.05]} />
+          <meshBasicMaterial color="#ff0000" opacity={0.4} transparent />
         </mesh>
       )}
     </group>
